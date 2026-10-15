@@ -1,0 +1,34 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec). Ainda nao publiquei: precisa da minha conta.
+services:
+  - type: web
+    name: monitor-saude-servicos
+    runtime: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: monitor-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: monitor-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: monitor-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: monitor-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: monitor-db
+          property: password
+      - key: ALERT_WEBHOOK_URL
+        sync: false
+
+databases:
+  - name: monitor-db
+    plan: free

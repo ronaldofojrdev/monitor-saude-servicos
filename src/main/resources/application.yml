@@ -1,0 +1,49 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: monitor-saude-servicos
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5437}/${DB_NAME:monitor}}
+    username: ${DB_USER:monitor}
+    password: ${DB_PASSWORD:monitor}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    problemdetails:
+      enabled: true
+  data:
+    web:
+      pageable:
+        max-page-size: 200
+
+monitor:
+  scheduler:
+    enabled: true
+    # de quanto em quanto tempo o scheduler procura alvos com checagem vencida
+    tick-ms: 5000
+    # checagens rodando em paralelo
+    threads: 8
+  history:
+    # resultados mais antigos que isso sao apagados todo dia as 03:30
+    retention-days: 30
+  alerts:
+    # se vazio, os alertas so aparecem na API e no log. Se preenchido, recebe um POST em JSON a cada alerta
+    webhook-url: ${ALERT_WEBHOOK_URL:}
+    webhook-timeout-ms: 5000
+    max-notify-attempts: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}

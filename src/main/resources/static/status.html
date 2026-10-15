@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Status dos servicos</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #1f2933; }
+    h1 { font-size: 1.4rem; }
+    .banner { padding: 1rem; border-radius: 8px; font-weight: 600; margin-bottom: 1.5rem; }
+    .OPERATIONAL { background: #d7f5dd; color: #14532d; }
+    .DEGRADED { background: #fff3c4; color: #7a5600; }
+    .MAJOR_OUTAGE { background: #fcd9d9; color: #7f1d1d; }
+    .NO_DATA { background: #e5e7eb; color: #374151; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid #e5e7eb; }
+    .dot { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; margin-right: .5rem; background: #9ca3af; }
+    .dot.UP { background: #22c55e; }
+    .dot.DOWN { background: #ef4444; }
+    small { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>Status dos servicos</h1>
+  <div id="banner" class="banner NO_DATA">Carregando...</div>
+  <ul id="services"></ul>
+  <small id="updated"></small>
+
+  <script>
+    const labels = {
+      OPERATIONAL: "Todos os servicos estao no ar",
+      DEGRADED: "Alguns servicos estao fora do ar",
+      MAJOR_OUTAGE: "Todos os servicos estao fora do ar",
+      NO_DATA: "Ainda sem dados"
+    };
+
+    async function load() {
+      try {
+        const response = await fetch("/status");
+        const page = await response.json();
+        const banner = document.getElementById("banner");
+        banner.className = "banner " + page.status;
+        banner.textContent = labels[page.status];
+
+        const list = document.getElementById("services");
+        list.innerHTML = "";
+        for (const service of page.services) {
+          const item = document.createElement("li");
+          const uptime = service.uptime24h == null ? "sem dados" : service.uptime24h + "% nas ultimas 24h";
+          item.innerHTML = '<span><span class="dot ' + service.status + '"></span></span><small></small>';
+          item.firstChild.append(service.name);
+          item.lastChild.textContent = uptime;
+          list.appendChild(item);
+        }
+        document.getElementById("updated").textContent = "Atualizado em " + new Date(page.updatedAt).toLocaleString("pt-BR");
+      } catch (e) {
+        document.getElementById("banner").textContent = "Nao foi possivel carregar o status";
+      }
+    }
+
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>
